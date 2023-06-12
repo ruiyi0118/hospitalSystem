@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.example.hospital.patient.wx.api.db.dao.VideoDiagnoseDao">
+    <!--保存挂号记录-->
+    <insert id="insert" parameterType="com.example.hospital.patient.wx.api.db.pojo.VideoDiagnoseEntity">
+        UPSERT INTO HOSPITAL.VIDEO_DIAGNOSE(
+        "id", "patient_card_id", "doctor_id", "out_trade_no", "amount",
+        "payment_status", "prepay_id", "transaction_id", "expect_start",
+        "expect_end", "real_start", "real_end", "status", "create_time"
+    )
+    VALUES(
+        NEXT VALUE FOR HOSPITAL.VIDEO_DIAGNOSE_SEQUENCE, ${patientCardId}, ${doctorId}, #{outTradeNo}, ${amount},
+        1, #{prepayId}, NULL, TO_DATE('${expectStart}'),
+        TO_DATE('${expectEnd}'), NULL, NULL, 1, NOW()
+        )
+    </insert>
+
+    <!--根据流水号查询主键值-->
+    <select id="searchByOutTradeNo" parameterType="String" resultType="HashMap">
+        SELECT "id",
+               "doctor_id" AS "doctorId"
+        FROM HOSPITAL.VIDEO_DIAGNOSE
+        WHERE "out_trade_no" = #{outTradeNo}
+    </select>
+
+    <update id="updatePayment" parameterType="Map">
+        UPSERT INTO HOSPITAL.VIDEO_DIAGNOSE("id","transaction_id","payment_status")
+        SELECT "id", #{transactionId}, ${paymentStatus}
+        FROM HOSPITAL.VIDEO_DIAGNOSE
+        WHERE "out_trade_no" = #{outTradeNo}
+    </update>
+
+</mapper>
